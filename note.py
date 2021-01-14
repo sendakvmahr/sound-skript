@@ -14,6 +14,8 @@ class Note():
             self._create_from_note(args[0], args[1])
         else: 
             raise ValueError("Incorrect inputs: {}".format(args))
+    def scale(self, scale_type):
+        return self.apply_relation("scale", scale=scale_type)
 
     def _create_from_note(self, note, octave):
         note_number = 0

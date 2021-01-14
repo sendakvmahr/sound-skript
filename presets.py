@@ -1,32 +1,30 @@
-"""
-BEAT = 480
-LENGTH_DIST = {
-    BEAT / 16 : 0,    #
-    BEAT / 8  : 0,    #
-    BEAT / 4  : 1,    #
-    BEAT / 2  : 8,    # 
-    BEAT / 1  : 16,    # Quarter in /4 time sig
-    BEAT * 2  : 5,    #
-    BEAT * 3  : 3,    #
-    BEAT * 4  : 2     # 
+
+def create_beat_distribution(dist):
+    assert (len(dist) == 8), "8 numbers required"
+    result = {} 
+    for i in range(-4, 3, 1):
+        result[beat * 2**i] = i+4
+    return result
+
+def create_note_distribution(dist):
+    assert (len(dist) == 8), "8 numbers required"
+    return list(result)
+
+
+
+beat = 480 #common number of beats per quarter
+
+sample_distributions = {
+    "default" : create_beat_distribution([0, 0, 1, 8, 16, 5, 3, 2])
 }
 
-LENGTH_DIST = {
-    BEAT / 4  : 18,    # sixteenth
-    BEAT / 2  : 16,    # eigth
-    BEAT / 1  : 10,    # Quarter in /4 time sig
-    BEAT * 2  : 1,    #
-    BEAT * 3  : 1,    #
-    BEAT * 4  : 0     # 
-}
-
-NOTE_DISTRO_LIST = [4, 7, 8, 3, 8, 1, 2, 3]
-REPEAT_DISTRO_LIST = [8, 9, 5, 4, 3, 0, 0, 1]
-bpm = 170
-channel = 1
-measures = 30
-repeat_chance = .5
-scale = "major"
-key = Note("C", 3).apply_relation("scale", scale=scale)
 """
-
+beat / 16 : 0,    #
+beat / 8  : 0,    #
+beat / 4  : 1,    # 16th note
+beat / 2  : 8,    # Eight note
+beat / 1  : 16,   # Quarter in /4 time sig
+beat * 2  : 5,    # Half Note
+beat * 3  : 3,    # Dotted half 
+beat * 4  : 2     # Whole note
+"""
