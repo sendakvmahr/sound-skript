@@ -11,3 +11,4 @@ def weighted_choice(choices):
 	    if upto + weight > rand:
 	        return choice
 	    upto += weight
+	return -1 # not sure what to do if there's not enough time left

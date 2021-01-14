@@ -22,12 +22,15 @@ def stringify_list_of_notes(l, sharp=True):
         res += note.get_note(sharp) + str(note.number) + " "+  str(note.length) + "|"
     return res
 
-def random_note_length(max_len):
+def random_note_length(max_len, note_distro):
     res = {}
-    for choice, weight in presets.sample_distributions["default"].items():
+    for choice, weight in presets.sample_distributions[note_distro].items():
         if choice <= max_len:
             res[choice] = weight
-    return util.weighted_choice(res)
+    result = util.weighted_choice(res)
+    if result != -1:
+        return result
+    return max_len 
 
 def rotate_scale_to_note(scale, note):
     result = list(scale)
@@ -41,11 +44,12 @@ class Melody():
             if kargs["random"]:
                 #key, length
                 length = kargs["length"]
+                note_distro = kargs["note_distro"]
                 key = kargs["key"]
                 num_beats = length / presets.beat
                 
                 # def __init__(self, channel, length, velocity, *args):
-                note_length = random_note_length(length)
+                note_length = random_note_length(length, note_distro)
                 note_number = random.randint(0, 7)
                 self.notes = [Midi_Note(channel, note_length, 127, key[note_number])]
                 self.length = note_length
@@ -56,7 +60,7 @@ class Melody():
                     up = random.choice([1, -1])
                     possible_notes = [s + up * 12 for s in possible_notes]
                     note = util.weighted_choice(dict(zip(possible_notes, NOTE_DISTRO_LIST)))
-                    next_length = random_note_length(max_length) 
+                    next_length = random_note_length(max_length, note_distro) 
 
                     note_to_append = Midi_Note(channel, next_length, 127, note)
                     self.notes.append(note_to_append)
@@ -79,7 +83,7 @@ class Melody():
                             self.notes.append(note_to_append)
                             self.length += note_to_append.length
                             total += note_length
-                print("62 ----", stringify_list_of_notes(self.notes))
+                #print("62 ----", stringify_list_of_notes(self.notes))
             else:
                 pass
         except Exception as E:
@@ -103,8 +107,10 @@ def generate_midi(song_name, time_signature="4/4"):
     channel = 1
     repeat_chance = .5
     measures = 30
-    num_tracks = 2
+    num_tracks = 5
     instruments = [0x07, 0x30]
+    distro = ["slow","slow","slow","slow","default"]
+    distro = ["slow","slow","slow","slow","slow"]
 
     #this sets it to C major scale at C3
     scale = "major"
@@ -122,10 +128,11 @@ def generate_midi(song_name, time_signature="4/4"):
             tracks.append(mido.MidiTrack())
             track = tracks[-1]
             track.append(mido.MetaMessage('track_name', name="track_" + str(n), time=0))
-            track.append(mido.Message('program_change', program=instruments[n], channel=n, time = 0))
+            track.append(mido.Message('program_change', program=random.randint(0,127), channel=n, time = 0))
             mid.tracks.append(track)
 
             measure_length = time_signature[1] * presets.beat
+            print(n)
             for i in range(measures):
                 # going to be used later in more complicated melodies with rests
                 progress = 0
@@ -134,15 +141,15 @@ def generate_midi(song_name, time_signature="4/4"):
                                                         # but not working thirds yet
                 melody_length = measure_length / num_melodies
                 # "energy" and pacing should be around here 
-                melodies = [Melody(channel, key=key, length=melody_length, random=True, scale=scale)]
+                melodies = [Melody(channel, key=key, note_distro=distro[n],length=melody_length, random=True, scale=scale)]
                 for i in range(num_melodies - 1):
                     if (random.random() < repeat_chance):
                         melodies.append((melodies[-1]).copy())
                     else:
-                        melodies.append(Melody(channel, key=key, length=melody_length, random=True, scale=scale))
+                        melodies.append(Melody(channel, key=key, note_distro=distro[n], length=melody_length, random=True, scale=scale))
                 for m in melodies:
                     m.write_to_track(track)
-                print("---", i)
+                #print("---", i)
             track.append(mido.MetaMessage('end_of_track', time=1))
         mid.save(song_name)
 
